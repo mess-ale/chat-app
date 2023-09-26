@@ -4,24 +4,85 @@ import { InputBase, Avatar, Box, Stack, Button,
   Switch, IconButton, Divider, Typography } from "@mui/material"
 import { useTheme, styled, alpha } from "@mui/material/styles";
 import ima from "../../assets/Images/logo.png";
-import { FaChevronDown } from 'react-icons/fa';
-import { Nav_Buttons } from "../../data"
-import { ArchiveBox, CircleDashed, Gear, MagnifyingGlass } from "phosphor-react";
+import { ChatList, Nav_Buttons } from "../../data"
+import { ArchiveBox, CircleDashed, Gear, MagnifyingGlass, CaretDown } from "phosphor-react";
 import { faker } from "@faker-js/faker";
+import Badge from '@mui/material/Badge';
 import useSettings from "../../hooks/useSettings"
-import Badges from './Badge'
+import { SimpleBarStyle } from "../../components/Scrollbar";
 
-const ChatElement = () => {
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#44b700',
+    color: '#44b700',
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    '&::after': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      animation: 'ripple 1.2s infinite ease-in-out',
+      border: '1px solid currentColor',
+      content: '""',
+    },
+  },
+  '@keyframes ripple': {
+    '0%': {
+      transform: 'scale(.8)',
+      opacity: 1,
+    },
+    '100%': {
+      transform: 'scale(2.4)',
+      opacity: 0,
+    },
+  },
+}));
+
+const ChatElement = ({id, name , img, msg, time, unread, online}) => {
   return (
       <Box sx={{
           width: "100%",
-          height: 60,
           borderRadius: 1,
           backgroundColor: "#ff1",
       }}
       p={1.1}
       >
-        <Badges />
+        <Stack
+          direction="row"
+          alignItems={"center"}
+          justifyContent="space-between"
+        >
+          <Stack direction="row" spacing={2}>
+            {online  ? <StyledBadge 
+              overlap="circular"
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              variant="dot"
+            >
+              <Avatar src={faker.image.avatar()} /> </StyledBadge>
+              : <Avatar src={faker.image.avatar()} />
+              }
+
+            
+            <Stack spacing={0.3}>
+              <Typography variant="subtitle2">
+                {name}
+              </Typography>
+              <Typography variant="caption">
+                {msg}
+              </Typography>
+            </Stack>
+          </Stack>
+          <Stack spacing={2} alignItems={"center"}>
+            <Typography sx={{fontWeight: 600, variant: "caption"}}>
+             {time}
+            </Typography>
+            <Badge color="primary" badgeContent={unread}>
+
+            </Badge>
+          </Stack>
+        </Stack>
       </Box>
   )
 }
@@ -83,7 +144,8 @@ const DashboardLayout = () => {
 
   return (
     <>
-      <Box p={1} sx={{backgroundColor: theme.palette.background, boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)", height: "100vh", width: "35%"}}>
+      <Box p={1} sx={{ flexGrow: 1, overflow: "scroll", backgroundColor: theme.palette.background, boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)",height: "100%", width: "35%"}}>
+        <SimpleBarStyle timeout={0.5} clickOnTrack={false}>
       <Stack spacing={3} direction="row" justifyContent={"space-between"} alignItems={"center"} sx={{ width:"100%" }}>
           <Box
             sx={{
@@ -109,7 +171,7 @@ const DashboardLayout = () => {
         </Stack>
 
         <Box sx={{ textAlign: "center", paddingTop: 4 }}>
-          <FaChevronDown onClick={openClose} />
+          <CaretDown size={32} onClick={openClose} />
         </Box>
 
         { showBox && 
@@ -143,7 +205,7 @@ const DashboardLayout = () => {
         }
 
 
-        <Stack paddingTop={3} spacing={3} direction="row" alignItems={"center"} sx={{ idth:"100%" }}>
+        <Stack paddingTop={3} spacing={3} direction="row" display={"flex"} justifyContent={"center"} alignItems={"center"} sx={{ idth:"100%" }}>
           <Box>
             <Avatar src={faker.image.avatar()} />
           </Box>
@@ -164,8 +226,30 @@ const DashboardLayout = () => {
             <Button >archive</Button>
           </Stack>
           <Divider />
+        </Stack >
+        
+        <Stack direction= "column">
+          <Stack spacing={2.4}>
+            <Typography sx={{color: "#676767"}} variant="subtitle2">
+              Pinned
+            </Typography>
+            
+            {ChatList.filter((el) => el.pinned).map((el) => {
+                return <ChatElement {...el}/>;
+              })}
+          </Stack>
+
+          <Stack spacing={2.4}>
+            <Typography sx={{color: "#676767"}} variant="subtitle2">
+              All Chats
+            </Typography>
+            
+            {ChatList.filter((el) => !el.pinned).map((el) => {
+                return <ChatElement {...el}/>;
+              })}
+          </Stack>
         </Stack>
-          <ChatElement />
+        </SimpleBarStyle>
       </Box>
       <Outlet />
     </>
